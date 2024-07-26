@@ -1,8 +1,17 @@
-# React + Vite
+# Talk to youtube
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+git clone the file via ssh
 
-Currently, two official plugins are available:
+cd into file
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+then do npm install
+
+then do npm run build
+
+this will create a dist folder
+
+go to ://chrome-extensions and click on the loader button
+
+then select the dist folder
+
+whenever you make changes you need to do npm run build and then reload the extension in chrome to see the updated changes
