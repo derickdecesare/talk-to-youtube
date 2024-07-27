@@ -214,5 +214,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Call setupKeyboardShortcut when the script loads
 setupKeyboardShortcut();
-
-console.log("YouTube Chat Extension content script loaded");

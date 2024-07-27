@@ -27,6 +27,7 @@
   "background": {
     "service_worker": "background.js"
   },
+
   "commands": {
     "toggle-sidebar": {
       "suggested_key": {

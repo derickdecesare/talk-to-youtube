@@ -119,3 +119,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+export const test = "This is a test export";

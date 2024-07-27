@@ -7,3 +7,5 @@ chrome.commands.onCommand.addListener((command) => {
     });
   }
 });
+
+console.log("YouTube Chat Extension background script loaded");
