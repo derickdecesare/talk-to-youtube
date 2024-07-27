@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "incremental": true,
     "downlevelIteration": true,
-    "types": ["chrome"]
+    "types": ["chrome"],
+    "lib": ["ES2018", "DOM"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]

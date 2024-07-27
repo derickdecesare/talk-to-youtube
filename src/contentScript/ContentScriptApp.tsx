@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
+import Sidebar from "../features/sidebar/Sidebar";
+
+interface ApiKeys {
+  openAIKey: string;
+  anthropicKey: string;
+}
 
 function ContentScriptApp() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKeys>({
+    openAIKey: "",
+    anthropicKey: "",
+  });
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -17,6 +26,9 @@ function ContentScriptApp() {
 
     document.addEventListener("keydown", handleKeyPress);
 
+    // Load API keys on initial mount
+    loadApiKeys();
+
     return () => {
       document.removeEventListener("keydown", handleKeyPress);
     };
@@ -29,6 +41,9 @@ function ContentScriptApp() {
         sendResponse({ success: true, isOpen: !isSidebarOpen });
       } else if (request.action === "getSidebarState") {
         sendResponse({ isOpen: isSidebarOpen });
+      } else if (request.action === "apiKeysUpdated") {
+        console.log("API keys updated");
+        loadApiKeys();
       }
     };
 
@@ -39,9 +54,19 @@ function ContentScriptApp() {
     };
   }, [isSidebarOpen]);
 
+  const loadApiKeys = () => {
+    chrome.storage.local.get(["openAIKey", "anthropicKey"], (result) => {
+      console.log("API keys loaded", result);
+      setApiKeys({
+        openAIKey: result.openAIKey || "",
+        anthropicKey: result.anthropicKey || "",
+      });
+    });
+  };
+
   return (
     <>
-      <Sidebar isOpen={isSidebarOpen} />
+      <Sidebar isOpen={isSidebarOpen} apiKeys={apiKeys} />
     </>
   );
 }
