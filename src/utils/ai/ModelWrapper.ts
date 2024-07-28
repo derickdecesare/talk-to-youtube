@@ -1,8 +1,9 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { ModelWrapper as ModelWrapperInterface } from "@/interfaces";
 
-class ModelWrapper {
+class ModelWrapper implements ModelWrapperInterface {
   private openAIModel: ChatOpenAI | null = null;
   private anthropicModel: ChatAnthropic | null = null;
   public context: string;
@@ -57,9 +58,7 @@ class ModelWrapper {
     const langchainMessages = messages.map((msg, index) => {
       if (index === 0) {
         // preappend context to first message
-        return new HumanMessage(
-          `Context: Here is the transcript of the youtube video that the user is watching: ${this.context}\n\nUser: ${msg}`
-        );
+        return new HumanMessage(`Context: ${this.context}\n\nUser: ${msg}`);
       } else {
         return index % 2 === 0 ? new HumanMessage(msg) : new AIMessage(msg);
       }

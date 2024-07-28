@@ -9,7 +9,15 @@
     "incremental": true,
     "downlevelIteration": true,
     "types": ["chrome"],
-    "lib": ["ES2018", "DOM"]
+    "lib": ["ES2018", "DOM"],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
+      "@interfaces/*": ["interfaces/*"],
+      "@utils/*": ["utils/*"],
+      "@components/*": ["components/*"],
+      "@features/*": ["features/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
