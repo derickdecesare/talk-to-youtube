@@ -5,8 +5,14 @@ import { HumanMessage, AIMessage } from "@langchain/core/messages";
 class ModelWrapper {
   private openAIModel: ChatOpenAI | null = null;
   private anthropicModel: ChatAnthropic | null = null;
+  public context: string;
 
-  constructor(private openAIKey: string, private anthropicKey: string) {
+  constructor(
+    private openAIKey: string,
+    private anthropicKey: string,
+    context: string
+  ) {
+    this.context = context;
     this.initModels();
   }
 
@@ -48,9 +54,18 @@ class ModelWrapper {
       throw new Error("Preferred model not available");
     }
 
-    const langchainMessages = messages.map((msg, index) =>
-      index % 2 === 0 ? new HumanMessage(msg) : new AIMessage(msg)
-    );
+    const langchainMessages = messages.map((msg, index) => {
+      if (index === 0) {
+        // preappend context to first message
+        return new HumanMessage(
+          `Context: Here is the transcript of the youtube video that the user is watching: ${this.context}\n\nUser: ${msg}`
+        );
+      } else {
+        return index % 2 === 0 ? new HumanMessage(msg) : new AIMessage(msg);
+      }
+    });
+
+    console.log("langchainMessages", langchainMessages);
 
     // disable type checking for model.stream
     //@ts-ignore

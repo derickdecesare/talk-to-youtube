@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import ModelWrapper from "../../utils/ai/ModelWrapper";
+import { retrieveTranscript } from "../../utils/scrape/retrieveTranscript";
+
+function getCurrentVideoId(): string | null {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("v");
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,15 +29,74 @@ function Sidebar({ isOpen, apiKeys }: SidebarProps) {
   const resizeRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const modelWrapper = useRef<ModelWrapper | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+
+  console.log("currentVideoId", currentVideoId);
+  useEffect(() => {
+    const checkForVideoChange = () => {
+      const videoId = getCurrentVideoId();
+      if (videoId !== currentVideoId) {
+        console.log("Video ID changed", videoId);
+        setCurrentVideoId(videoId);
+      }
+    };
+
+    // Initial check
+    checkForVideoChange();
+
+    // Listen for popstate events (back/forward navigation)
+    window.addEventListener("popstate", checkForVideoChange);
+
+    // Create a custom event listener for YouTube navigation
+    const observer = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.target.nodeName === "TITLE")) {
+        checkForVideoChange();
+      }
+    });
+
+    observer.observe(document.querySelector("head"), {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+
+    return () => {
+      window.removeEventListener("popstate", checkForVideoChange);
+      observer.disconnect();
+    };
+  }, [currentVideoId]);
+
+  const initializeModelWrapper = async () => {
+    try {
+      const { transcript, metadata } = await retrieveTranscript();
+      console.log("Transcript:", transcript.slice(0, 100));
+
+      modelWrapper.current = new ModelWrapper(
+        apiKeys.openAIKey,
+        apiKeys.anthropicKey,
+        transcript
+      );
+      console.log("ModelWrapper initialized");
+      console.log("modelwrapper.current", modelWrapper.current);
+    } catch (error) {
+      console.error("Error initializing model wrapper:", error);
+    }
+  };
 
   useEffect(() => {
-    modelWrapper.current = new ModelWrapper(
-      apiKeys.openAIKey,
-      apiKeys.anthropicKey
-    );
-    console.log("ModelWrapper initialized");
-    console.log("modelwrapper.current", modelWrapper.current);
-  }, [apiKeys]);
+    if (apiKeys.openAIKey || apiKeys.anthropicKey) {
+      setMessages([]);
+      initializeModelWrapper();
+    }
+  }, [apiKeys, currentVideoId]);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,6 +105,7 @@ function Sidebar({ isOpen, apiKeys }: SidebarProps) {
   useEffect(scrollToBottom, [messages]);
 
   const handleSendMessage = async () => {
+    console.log("handlesend", modelWrapper.current);
     if (inputMessage.trim() && modelWrapper.current) {
       const userMessage: Message = { role: "user", content: inputMessage };
       setMessages((prev) => [...prev, userMessage]);
@@ -158,6 +224,7 @@ function Sidebar({ isOpen, apiKeys }: SidebarProps) {
       </div>
       <div className="p-4 border-t border-zinc-700 flex text-xl">
         <input
+          ref={inputRef}
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
